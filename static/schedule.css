@@ -1,0 +1,73 @@
+@charset "UTF-8";
+
+#course_list {
+height: 200px;
+width: 400px;
+border:1px solid #ccc;
+overflow:auto;
+position:absolute;
+left:100px;
+top:80px;
+}
+
+#course_info {
+height: 250px;
+width: 400px;
+border:1px solid #ccc;
+overflow:auto;
+position:absolute;
+left:100px;
+top:300px;
+}
+
+#schedule1 {
+height: 30px;
+width: 700px;
+position:absolute;
+left:520px;
+top:50px;
+}
+
+#schedule {
+height: 470px;
+width: 700px;
+overflow: auto;
+border: 1px solid #000;
+position:absolute;
+left:520px;
+top:80px;
+}
+
+#month { border-collapse: collapse; }
+
+#month1 {
+border-collapse: collapse;
+}
+
+#month1 th{
+border: 0px solid #000;
+width: 90px;
+font-size:14px;
+height:30px;
+}
+
+#month1 thead .nothing {
+width:50px;
+}
+
+#month tbody .nothing {
+width:50px;
+}
+
+#month tbody .tes{
+position: relative;
+top:300px;
+right:-400px;
+font-size:30px;
+}
+
+#month tbody th{
+border: 1px solid #000;
+width: 90px;
+height: 70px;
+}

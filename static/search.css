@@ -1,0 +1,42 @@
+@charset "UTF-8";
+/* CSS Document */
+
+#schools {
+height:220px;width:120px;border:1px solid #ccc;font:16px/26px Georgia, Garamond, Serif;overflow:auto;
+position: absolute;
+left: 100px;
+top: 250px;
+}
+
+#majors {
+height:400px;width:180px;border:1px solid #ccc;font:16px/26px Georgia, Garamond, Serif;overflow:auto;
+position: absolute;
+left: 300px;
+top: 150px;
+}
+
+#courses {
+height:500px;width:240px;border:1px solid #ccc;font:16px/26px Georgia, Garamond, Serif;overflow:auto;
+position: absolute;
+left: 580px;
+top: 100px;
+}
+
+
+#info {
+height:500px;width:240px;border:1px solid #ccc;font:16px/26px Georgia, Garamond, Serif;overflow:auto;
+position: absolute;
+left: 930px;
+top: 100px;
+}
+
+body {
+background-image:url(/static/background.jpg);
+}
+
+#result {
+background-image:url(/static/background.jpg);
+border: 0px;
+}
+
+

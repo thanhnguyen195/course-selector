@@ -1,0 +1,105 @@
+<html>
+<head>
+<title>The Schedule</title>
+<link rel="stylesheet" type="text/css" href="/static/schedule.css"/>
+</head>
+<body>
+
+
+<script language="javascript"> 
+function toggle(showHideDiv, switchTextDiv) {
+	var ele = document.getElementById(showHideDiv);
+	var text = document.getElementById(switchTextDiv);
+    //document.write(ele.style.display);
+	if(ele.style.display == "block") {
+        ele.style.display = "none";
+		text.innerHTML = "restore";
+  	}
+	else {
+		ele.style.display = "block";
+		text.innerHTML = "collapse";
+	}
+}
+</script>
+
+<script type="text/javascript">
+{% for course in courses %}
+{% endfor %}
+</script>
+<center><h1>Personal Schedule</h1></center>
+<div id="course_list">
+course_list
+<a id="displayText" href="javascript:toggle('courseCode','displayText');">show</a> <== click Here
+</div>
+<div id="course_info" style="display:block;">
+course_info
+</div>
+
+<div id="schedule1">
+<table id="month1">
+<thead>
+<tr>
+<th class="nothing">&nbsp;</th>
+<th>Monday</th>
+<th>Tuesday</th>
+<th>Wednesday</th>
+<th>Thursday</th>
+<th>Friday</th>
+<th class="weekend">Saturday</th>
+<th class="weekend">Sunday</th>
+</tr>
+</thead>
+</table>
+</div>
+
+
+<div id="schedule">
+
+<table id="month">
+<tbody>
+<div class="test" style="display: block; top:400px;  position: absolute; left:200px; border:1px solid red;">
+test
+</div>
+
+
+<script type="text/javascript">
+var timeStart,timeEnd,day;
+timeStart = 100;
+timeEnd = 100;
+day=130;
+document.write("<div id=\"courseCode\" style=\"top:"+timeStart+"px; left:"+day+"px; width:100px; height:"+timeEnd+"px; background-color:yellow; position:absolute;\">");
+document.write("courseTest");
+document.write("</div>");
+</script>
+
+
+<script type="text/javascript">
+var i,j;
+for (i=0;i<16;i++){
+document.write("<tr>");
+if (i<6) {
+document.write("<th class=\"nothing\">"+(i+6)+"am</th>");
+}
+if (i==6) {
+document.write("<th class=\"nothing\">"+(i+6)+"pm</th>");
+}
+if (i>6) {
+document.write("<th class=\"nothing\">"+(i-6)+"pm</th>");
+}
+for (j=0;j<7;j++){
+document.write("<th>&nbsp;</th>");
+}
+document.write("</tr>");
+}
+</script>
+</tbody>
+
+</table>
+
+</div>
+
+</body>
+</html>
+
+
+
