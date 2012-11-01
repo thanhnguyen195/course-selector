@@ -4,6 +4,7 @@ from google.appengine.ext import db
 class Schools(db.Model):
     name = db.StringProperty()
     term = db.StringProperty()
+    year = db.StringProperty()
     
     @property
     def majors(self):
@@ -15,6 +16,7 @@ class Majors(db.Model):
     name = db.StringProperty()
     school = db.StringProperty()
     term = db.StringProperty()
+    year = db.StringProperty()
     
     @property
     def courses(self):
@@ -30,6 +32,13 @@ class Courses(db.Model):
     schedule = db.StringProperty()
     school = db.StringProperty()
     term = db.StringProperty()
+    year = db.StringProperty()
+    credit = db.StringProperty()
+    location = db.StringProperty()
+    section = db.StringProperty()
+    note = db.StringProperty()
+    linkup = db.StringProperty()
+    InsPer = db.StringProperty()
     
     @property
     def time(self):
@@ -38,7 +47,7 @@ class Courses(db.Model):
 
 
 class Time(db.Model):
-    day = db.StringProperty()
+    day = db.IntegerProperty()
     start = db.FloatProperty()
     end = db.FloatProperty()
     course = db.ReferenceProperty(Courses)
@@ -54,16 +63,3 @@ class CourseMajor(db.Model):
     
     
     
-    
-    
-"""
-Engl-104-M Engl for Multilingual spkers II
-
-New
-
-01/25/2012-05/11/2012
-Course Tuesday, Thursday 08:35AM-09:50AM, MHC, Room to be announced
-0.00
-
-01/25/12
-"""

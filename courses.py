@@ -349,9 +349,12 @@ class URLFetchHandler(BaseHandler):
         ############################################################################
         
         
-        def coursePageProcess(link,sect):
+        def coursePageProcess(link,sect,course_code): #go inside each course page, extract the information then put these information into datastore
             page = urlfetch.fetch(link)
             if page.status_code == 200:
+                courseSection = sect
+                courseCode = course_code
+                
                 content = page.content
                 start = content.find("</head>")
                 content = content[start:]
@@ -479,13 +482,61 @@ class URLFetchHandler(BaseHandler):
                 #return courseTime
                 
                 ############ Put the data into datastore #######################
+                coursedata = data.Courses.get_or_insert(courseTitle+courseCode+courseSection,
+                             name = courseTitle,
+                             des = courseDescription,
+                             code = courseCode,
+                             instructor = courseInstructor,
+                             schedule = courseTime,
+                             major = courseSubject,
+                             school = courseSchool,
+                             term = courseSemester,
+                             year = courseYear,
+                             credit = courseCredit,
+                             location = courseLocation,
+                             section = courseSection,
+                             note = courseNote,
+                             linkup = courseLink,
+                             InsPer = courseInsPer)
+                coursedata.put()
+                majordata = data.Majors.get_or_insert(courseSubject,
+                               name = courseSubject,
+                               school = courseSchool,
+                               term = courseSemester,
+                               year = courseYear)
+                majordata.put()
+                coursemajor = data.CourseMajor(major = majordata, course = coursedata)
+                coursemajor.put()
                 
+                schooldata = data.Schools.get_or_insert(courseSchool,
+                                      name = courseSchool,
+                                      term = courseSemester,
+                                      year = courseYear)
+                schooldata.put()
+                majorschool = data.MajorSchool.get_or_insert(schooldata.name+majordata.name,school = schooldata, major = majordata)
+                majorschool.put()
                 
+                for i in range(len(courseDays)):
+                    if courseDays[i]==2:
+                        textDay="M"
+                    if courseDays[i]==3:
+                        textDay="TU"
+                    if courseDays[i]==4:
+                        textDay="W"
+                    if courseDays[i]==5:
+                        textDay="TH"
+                    if courseDays[i]==6:
+                        textDay="F"
+                    if courseDays[i]==7:
+                        textDay="S"
+                    time = data.Time.get_or_insert(courseCode+courseSection+textDay,day = courseDays[i], start = courseStarts[i], end = courseEnds[i], course = coursedata)
+                    time.put()
+            
                 ################################################################
                 
             return "doneCoursePageProcess"
         
-        def pageListProcess(content):
+        def pageListProcess(content): #run through the page list and pull out the link and the section of 50 courses in there, then go into each course to put the data of them into datastore
             start = content.find("<tbody>")
             end = content.find("</tbody>")
             tbody = content[start:end]
@@ -522,7 +573,7 @@ class URLFetchHandler(BaseHandler):
                 end = course.find(">",start)-1
                 courseLink.append("https://www.fivecolleges.edu"+course[start:end].strip())
                 
-            result = coursePageProcess(courseLink[24],courseSection[24])
+            result = coursePageProcess(courseLink[40],courseSection[40],courseCode[40])
             #return courseLink[24]
             return result
     
