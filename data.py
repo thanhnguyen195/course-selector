@@ -43,7 +43,7 @@ class Courses(db.Model):
     @property
     def time(self):
         items = Time.all().filter('course =',self)
-        return items.fetch(1000)
+        return items.fetch(100)
 
 
 class Time(db.Model):
@@ -61,5 +61,17 @@ class CourseMajor(db.Model):
     major = db.ReferenceProperty(Majors)
     course = db.ReferenceProperty(Courses)
     
-    
+class Users(db.Model):
+    email = db.UserProperty()
+    id = db.StringProperty()
+
+    @property
+    def courses(self):
+        items = UserCourse.all().filter('user =',self)
+        return items.fetch(300)
+
+class UserCourse(db.Model):
+    user = db.ReferenceProperty(Users)
+    course = db.ReferenceProperty(Courses)
+    id = db.StringProperty()
     

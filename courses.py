@@ -19,11 +19,14 @@ import jinja2
 import os
 import string
 import re
+import HTMLParser
 
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from django.utils import simplejson
 from google.appengine.api import urlfetch
+from google.appengine.api import users
+#from data import Entry
 
 import data
 
@@ -57,8 +60,59 @@ class MainHandler(BaseHandler):
         majors = data.Majors.all().filter('school =',currentschool).fetch(1000)
         currentmajor = self.request.get("major")
         courses = data.Courses.all().filter('school =',currentschool).filter('major =',currentmajor).fetch(1000)
-        self.render("search.html", schools = schools, majors = majors, courses = courses)
+        user = users.get_current_user()
+        if user:
+            #get the info of current user
+            id = user.user_id()
+            account = data.Users.all().filter('id =',id).get()
+            
+            course_test = data.Courses.all().fetch(5)
+            for course in course_test:
+                usercourse = data.UserCourse.get_or_insert(account.id+course.code+course.section, user = account, course = course, id=account.id+course.code+course.section)
+                usercourse.put()
+            
+            logout_link = users.create_logout_url("/")
+            self.render("search.html", schools = schools, majors = majors, courses = courses, account = account, logout_link = logout_link)
+            #self.response.out.write(currentmajor)
+        else:
+            self.redirect(users.create_login_url("/logincheck"))
+
+class RPCHandler(BaseHandler): # AJAX call
+    def get(self):
+        user = users.get_current_user()
+        id = user.user_id()
+        account = data.Users.all().filter('id =',id).get()
+
+        id = self.request.get('infor')
+        name = self.request.get('name')
+        code = self.request.get('code')
+        section = self.request.get('section')
         
+        course = data.Courses.all().filter('code =',code).filter('section =',section).filter('name =',name).get()
+        token = data.UserCourse.all().filter('id =',id).get()
+        if token:
+            token.delete()
+            self.response.out.write("add")
+        else:
+            usercourse = data.UserCourse.get_or_insert(id,user = account, course = course, id = id)
+            usercourse.put()
+            self.response.out.write("remove")
+
+
+class UserHandler(BaseHandler): # Create a new user database if it is a new user
+    def get(self):
+        user = users.get_current_user()
+        id = user.user_id()
+        account = data.Users.all().filter('id =',id).get()
+        if account:
+            self.redirect("/")
+        else:
+            accountIn = data.Users.get_or_insert(id, email = user, id = id)
+            accountIn.put()
+            self.redirect("/")
+
+
+"""
 class InputData(BaseHandler):
 
     def get(self):
@@ -127,12 +181,16 @@ class InputData(BaseHandler):
                     time.put()
             self.redirect('/inputdata')
         put_data()
+        """
 
 class UserSchedule(BaseHandler):
     def get(self):
-        courses = data.Courses.all().fetch(1000)
-        self.render("userschedule.html", courses=courses)
-
+        user = users.get_current_user()
+        if user:
+            courses = data.Courses.all().fetch(1000)
+            self.render("userschedule.html", courses=courses)
+        else:
+            self.redirect(users.create_login_url("/logincheck"))
 
 
 class URLFetchHandler(BaseHandler):
@@ -236,7 +294,7 @@ class URLFetchHandler(BaseHandler):
                     courseDays.append(day)
                     courseStarts.append(start)
                     courseEnds.append(end)
-            return courseStarts,courseStarts,courseEnds
+            return courseDays,courseStarts,courseEnds
         
         ############################################################################
         
@@ -351,6 +409,7 @@ class URLFetchHandler(BaseHandler):
         
         def coursePageProcess(link,sect,course_code): #go inside each course page, extract the information then put these information into datastore
             page = urlfetch.fetch(link)
+            parser = HTMLParser.HTMLParser()
             if page.status_code == 200:
                 courseSection = sect
                 courseCode = course_code
@@ -362,6 +421,8 @@ class URLFetchHandler(BaseHandler):
                 start = content.find("> -->")+5
                 end = content.find("<!--",start)
                 courseTitle = content[start:end].strip()
+                courseTitle = parser.unescape(courseTitle)
+                
                 
                 start = content.find("field field-name-field-course-semester field-type-list-text field-label-inline clearfix")
                 end = content.find("field field-name-field-course-year field-type-list-text field-label-inline clearfix")
@@ -369,6 +430,7 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseSemester = token[start:end]
+                courseSemester = parser.unescape(courseSemester)
                 
                 start = content.find("field field-name-field-course-year field-type-list-text field-label-inline clearfix")
                 end = content.find("field field-name-field-course-subject-name field-type-text field-label-inline clearfix")
@@ -376,6 +438,7 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseYear = token[start:end]
+                courseYear = parser.unescape(courseYear)
                 
                 start = content.find("field field-name-field-course-subject-name field-type-text field-label-inline clearfix")
                 end = content.find("field field-name-field-course-number field-type-text field-label-inline clearfix")
@@ -383,6 +446,8 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseSubject = token[start:end]
+                courseSubject = parser.unescape(courseSubject)
+                courseSubject = courseSubject.replace("&"," and ")
                 
                 start = content.find("field field-name-field-course-institution field-type-list-text field-label-inline clearfix")
                 end = content.find("field field-name-body field-type-text-with-summary field-label-hidden")
@@ -390,13 +455,24 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseSchool = token[start:end]
+                courseSchool = parser.unescape(courseSchool)
                 
                 start = content.find("field field-name-body field-type-text-with-summary field-label-hidden")
                 end = content.find("field field-name-field-course-comments field-type-text-long field-label-inline clearfix")
                 token = content[start:end].strip()
                 start = token.find("content:encoded")+17
                 end = token.find("</div>",start)
-                courseDescription = token[start:end]
+                courseDescription_token = token[start:end]
+                if courseDescription_token.find("<p>")==-1:
+                    courseDescription = courseDescription_token
+                else:
+                    courseDescription=""
+                    while courseDescription_token.find("<p>")!=-1:
+                        start = courseDescription_token.find("<p>")
+                        end = courseDescription_token.find("</p>")
+                        courseDescription = courseDescription+" "+courseDescription_token[start+3:end]
+                        courseDescription_token=courseDescription_token[end+4:]
+                courseDescription = parser.unescape(courseDescription)
                 
                 start = content.find("field field-name-field-course-comments field-type-text-long field-label-inline clearfix")
                 end = content.find("field field-name-field-course-linked field-type-list-boolean field-label-inline clearfix")
@@ -404,6 +480,7 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseNote = token[start:end]
+                courseNote = parser.unescape(courseNote)
                 
                 start = content.find("field field-name-field-course-linked field-type-list-boolean field-label-inline clearfix")
                 end = content.find("field field-name-field-course-instructor-perm field-type-list-boolean field-label-inline clearfix")
@@ -411,6 +488,7 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseLink = token[start:end]
+                #courseLink = parser.unescape(courseLink)
                 
                 start = content.find("field field-name-field-course-instructor-perm field-type-list-boolean field-label-inline clearfix")
                 end = content.find("field field-name-field-course-url field-type-link-field field-label-inline clearfix")
@@ -418,6 +496,7 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseInsPer = token[start:end]
+                #courseInsPer = parser.unescape(courseInsPer)
                 
                 ############### take the time out aka the hardest part ################
                 start = content.find("summary=\"Five College Course Schedule")
@@ -505,7 +584,7 @@ class URLFetchHandler(BaseHandler):
                                term = courseSemester,
                                year = courseYear)
                 majordata.put()
-                coursemajor = data.CourseMajor(major = majordata, course = coursedata)
+                coursemajor = data.CourseMajor.get_or_insert(courseSubject+courseTitle,major = majordata, course = coursedata)
                 coursemajor.put()
                 
                 schooldata = data.Schools.get_or_insert(courseSchool,
@@ -519,16 +598,18 @@ class URLFetchHandler(BaseHandler):
                 for i in range(len(courseDays)):
                     if courseDays[i]==2:
                         textDay="M"
-                    if courseDays[i]==3:
+                    elif courseDays[i]==3:
                         textDay="TU"
-                    if courseDays[i]==4:
+                    elif courseDays[i]==4:
                         textDay="W"
-                    if courseDays[i]==5:
+                    elif courseDays[i]==5:
                         textDay="TH"
-                    if courseDays[i]==6:
+                    elif courseDays[i]==6:
                         textDay="F"
-                    if courseDays[i]==7:
+                    elif courseDays[i]==7:
                         textDay="S"
+                    else:
+                        textDay="Nothing"
                     time = data.Time.get_or_insert(courseCode+courseSection+textDay,day = courseDays[i], start = courseStarts[i], end = courseEnds[i], course = coursedata)
                     time.put()
             
@@ -572,8 +653,9 @@ class URLFetchHandler(BaseHandler):
                 start = course.find("<a href=")+9
                 end = course.find(">",start)-1
                 courseLink.append("https://www.fivecolleges.edu"+course[start:end].strip())
-                
-            result = coursePageProcess(courseLink[40],courseSection[40],courseCode[40])
+            
+            for i in range(5):
+                result = coursePageProcess(courseLink[i],courseSection[i],courseCode[i])
             #return courseLink[24]
             return result
     
@@ -585,8 +667,21 @@ class URLFetchHandler(BaseHandler):
                 self.response.out.write(result_display)
         mainFetch()
 
+        #super dangerous-delete all the datastore
+"""     db.delete(data.Courses.all(keys_only=True))
+        db.delete(data.Majors.all(keys_only=True))
+        db.delete(data.Schools.all(keys_only=True))
+        db.delete(data.Time.all(keys_only=True))
+        db.delete(data.MajorSchool.all(keys_only=True))
+        db.delete(data.CourseMajor.all(keys_only=True))"""
+
+
+
+
 app = webapp2.WSGIApplication([('/', MainHandler),
                                ('/schedule', UserSchedule),
-                               ('/inputdata', InputData),
+                               #('/inputdata', InputData),
+                               ('/logincheck', UserHandler),
+                               ('/rpc', RPCHandler),
                                ('/URLFetch', URLFetchHandler)],
                               debug=True)

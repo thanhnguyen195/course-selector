@@ -24,22 +24,59 @@ var courses = ""
 </head>
 <body>
 <script type="text/javascript">
-    function changeInfo(course){
+    function changeInfo(courseIn){
         {% for course in courses %}
-            if (course=='{{course.name}}') {
-                {% for time in course.time %}
-                    $('info').innerHTML = "{{time.day}}+{{course.des}}";
-                {% endfor %}
+            if (courseIn=='{{course.code}}') {
+                    $('info').innerHTML = "{{course.name}}+{{course.des}}";
             }
         {% endfor %}
     }
+
+    function add_remove_course(div_id,name,code,section){
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+          {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp=new XMLHttpRequest();
+          }
+        else
+          {// code for IE6, IE5
+          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+          }
+        var test="test";
+        xmlhttp.open("GET","/rpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp.send();
+        //xmlhttp.send("infor=test");
+        xmlhttp.onreadystatechange=function()
+          {
+          if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+            button = document.getElementById(div_id);
+            button.value = xmlhttp.responseText;
+            //document.write("olala go inside");
+            }
+          }
+        /*
+        button = document.getElementById(div_id);
+        if (button.value=="remove") {
+            button.value = "add";
+        } else {
+            button.value = "remove";
+        }
+        */
+    }
 </script>
 <center><h1>Hello Sky</h1></center>
+<a href={{logout_link}}>Log Out</a>
+
+<p>{{account.id}}  {{account.email}}</p>
+    {% for course in account.courses %}
+        <p>{{course.course.name}} {{course.course.section}}</p>
+    {% endfor %}
 
 <div id="schools">
 <ul>
 {% for school in schools %}
-<li><div id={{school.name}} onclick="changeMajor()">{{school.name}}</div></li>
+<li><a href="/?school={{school.name}}" onclick="changeMajor()">{{school.name}}</a></li>
 {% endfor %}
 </ul>
 </div>
@@ -53,7 +90,13 @@ var courses = ""
 <div id="courses">
 <ul>
 {% for course in courses %}
-<li><div id="courseid" onclick="changeInfo('{{course.name}}')">{{course.name}}</div></li>
+<script type="text/javascript">
+add_remove_course('{{account.id}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}');
+</script>
+<li>
+<input id="{{account.id}}{{course.code}}{{course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}')" value="add" />
+<div id="courseid" onclick="changeInfo('{{course.code}}')">{{course.name}}</div>
+</li>
 {% endfor %}
 </ul>
 </div>
