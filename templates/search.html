@@ -7,6 +7,7 @@ Smart Courses Selector
 <!--<script src="/static/jquery.js"></script>
 <!--<script type="text/javascript" src="/static/json2.js"></script>-->
 <script type="text/javascript">
+/*
 var majors = ""
 var courses = ""
     function changeMajor(){
@@ -14,20 +15,21 @@ var courses = ""
     var result = document.getElementById('result')
     result.value = majors;
     }
-    
-    function $(id){
-      return document.getElementById(id);
-    }
+*/    
 
 </script>
 
 </head>
 <body>
 <script type="text/javascript">
+    function $(id){
+      return document.getElementById(id);
+    }
+    
     function changeInfo(courseIn){
         {% for course in courses %}
-            if (courseIn=='{{course.code}}') {
-                    $('info').innerHTML = "{{course.name}}+{{course.des}}";
+            if (courseIn=='{{course.code}}{{course.section}}') {
+                    $('info').innerHTML = "{{course.schedule}}+{{course.name}}+{{course.des}}";
             }
         {% endfor %}
     }
@@ -55,16 +57,38 @@ var courses = ""
             //document.write("olala go inside");
             }
           }
-        /*
-        button = document.getElementById(div_id);
-        if (button.value=="remove") {
-            button.value = "add";
-        } else {
-            button.value = "remove";
-        }
-        */
+    }
+    
+    function add_remove_course_show(div_id,name,code,section){
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+          {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp=new XMLHttpRequest();
+          }
+        else
+          {// code for IE6, IE5
+          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+          }
+        var test="test";
+        xmlhttp.open("GET","/srpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp.send();
+        //xmlhttp.send("infor=test");
+        xmlhttp.onreadystatechange=function()
+          {
+          if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+            button = document.getElementById(div_id);
+            button.value = xmlhttp.responseText;
+            //document.write("olala go inside");
+            }
+          }
     }
 </script>
+{% for course in courses %}
+<script type="text/javascript">
+add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}');
+</script>
+{% endfor %}
 <center><h1>Hello Sky</h1></center>
 <a href={{logout_link}}>Log Out</a>
 
@@ -90,12 +114,9 @@ var courses = ""
 <div id="courses">
 <ul>
 {% for course in courses %}
-<script type="text/javascript">
-add_remove_course('{{account.id}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}');
-</script>
 <li>
-<input id="{{account.id}}{{course.code}}{{course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}')" value="add" />
-<div id="courseid" onclick="changeInfo('{{course.code}}')">{{course.name}}</div>
+<input id="{{account.id}}{{course.name}}{{course.code}}{{course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.name}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}')" value="add" />
+<div id="courseid" onclick="changeInfo('{{course.code}}{{course.section}}')">{{course.name}}</div>
 </li>
 {% endfor %}
 </ul>

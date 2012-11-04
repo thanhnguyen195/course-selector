@@ -74,4 +74,5 @@ class UserCourse(db.Model):
     user = db.ReferenceProperty(Users)
     course = db.ReferenceProperty(Courses)
     id = db.StringProperty()
+    display = db.StringProperty()
     

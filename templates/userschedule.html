@@ -7,29 +7,205 @@
 
 
 <script language="javascript"> 
-function toggle(showHideDiv, switchTextDiv) {
-	var ele = document.getElementById(showHideDiv);
-	var text = document.getElementById(switchTextDiv);
-    //document.write(ele.style.display);
-	if(ele.style.display == "block") {
-        ele.style.display = "none";
-		text.innerHTML = "restore";
-  	}
-	else {
-		ele.style.display = "block";
-		text.innerHTML = "collapse";
-	}
-}
+    function toggle(showHideDiv, days, switchTextDiv,usercourseid) {
+        var i;
+        
+        
+        var xmlhttp2;
+        var response;
+        if (window.XMLHttpRequest)
+          {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp2=new XMLHttpRequest();
+          }
+        else
+          {// code for IE6, IE5
+          xmlhttp2=new ActiveXObject("Microsoft.XMLHTTP");
+          }
+        xmlhttp2.open("GET","/display?infor="+usercourseid,true);
+        xmlhttp2.send();
+        
+        xmlhttp2.onreadystatechange=function()
+          {
+          if (xmlhttp2.readyState==4 && xmlhttp2.status==200)
+            {
+            response = xmlhttp2.responseText;
+            for (i=0;i<days.length;i++){
+            showHide = showHideDiv + days.charAt(i);
+            var ele = document.getElementById(showHide);
+            var text = document.getElementById(switchTextDiv);
+            
+            
+                if(response == "hidden") {
+                    ele.style.display = "none";
+                    text.innerHTML = "show";
+                }
+                else {
+                    ele.style.display = "block";
+                    text.innerHTML = "hide";
+                }
+            }
+            }
+        }
+        
+        /*
+        response = xmlhttp2.responseText;
+        //document.write(xmlhttp2.responseText);
+        //document.write(response);
+        for (i=0;i<days.length;i++){
+            showHide = showHideDiv + days.charAt(i);
+            var ele = document.getElementById(showHide);
+            var text = document.getElementById(switchTextDiv);
+            
+            
+                if(response == "hidden") {
+                    ele.style.display = "none";
+                    text.innerHTML = "show";
+                }
+                else {
+                    ele.style.display = "block";
+                    text.innerHTML = "hide";
+                }
+            }
+            */
+    }
+    
+    
+    function toggle_show(showHideDiv, days, switchTextDiv,usercourseid) {
+        var i;
+        
+        var xmlhttp3;
+        var response;
+        if (window.XMLHttpRequest)
+          {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp3=new XMLHttpRequest();
+          }
+        else
+          {// code for IE6, IE5
+          xmlhttp3=new ActiveXObject("Microsoft.XMLHTTP");
+          }
+        xmlhttp3.open("GET","/showdisplay?infor="+usercourseid,true);
+        xmlhttp3.send();
+        
+        xmlhttp3.onreadystatechange=function()
+          {
+          if (xmlhttp3.readyState==4 && xmlhttp3.status==200)
+            {
+            response = xmlhttp3.responseText;
+            for (i=0;i<days.length;i++){
+            showHide = showHideDiv + days.charAt(i);
+            var ele = document.getElementById(showHide);
+            var text = document.getElementById(switchTextDiv);
+            
+            
+                if(response == "hidden") {
+                    ele.style.display = "none";
+                    text.innerHTML = "show";
+                }
+                else {
+                    ele.style.display = "block";
+                    text.innerHTML = "hide";
+                }
+            }
+            }
+        }
+    }
+    
+    
+    
+    
+////////////////////////////////////////////////////////////////////////////////
+    function $(id){
+      return document.getElementById(id);
+    }
+    
+    function changeInfo(courseIn){
+        {% for course in courses %}
+            if (courseIn=='{{course.code}}{{course.section}}') {
+                    $('course_info').innerHTML = "{{course.schedule}}+{{course.name}}+{{course.des}}";
+            }
+        {% endfor %}
+    }
+    
+    function add_remove_course(div_id,name,code,section){
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+          {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp=new XMLHttpRequest();
+          }
+        else
+          {// code for IE6, IE5
+          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+          }
+        var test="test";
+        xmlhttp.open("GET","/rpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp.send();
+        //xmlhttp.send("infor=test");
+        xmlhttp.onreadystatechange=function()
+          {
+          if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+            button = document.getElementById(div_id);
+            button.value = xmlhttp.responseText;
+            //document.write("olala go inside");
+            }
+          }
+    }
+    
+    function add_remove_course_show(div_id,name,code,section){
+        var xmlhttp;
+        if (window.XMLHttpRequest)
+          {// code for IE7+, Firefox, Chrome, Opera, Safari
+          xmlhttp=new XMLHttpRequest();
+          }
+        else
+          {// code for IE6, IE5
+          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+          }
+        var test="test";
+        xmlhttp.open("GET","/srpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp.send();
+        //xmlhttp.send("infor=test");
+        xmlhttp.onreadystatechange=function()
+          {
+          if (xmlhttp.readyState==4 && xmlhttp.status==200)
+            {
+            button = document.getElementById(div_id);
+            button.value = xmlhttp.responseText;
+            //document.write("olala go inside");
+            }
+          }
+    }
+
 </script>
 
 <script type="text/javascript">
-{% for course in courses %}
-{% endfor %}
+
 </script>
 <center><h1>Personal Schedule</h1></center>
 <div id="course_list">
-course_list
-<a id="displayText" href="javascript:toggle('courseCode','displayText');">show</a> <== click Here
+course_list </br>
+{% for course in account.courses %}
+<script type="text/javascript">
+    //toogle for display course in the schedule
+    var days = '';
+    {% for time in course.course.time %}
+        days = days+'{{time.day}}';
+    {% endfor %}
+    
+    toggle_show('{{course.course.section}}',days,'displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}');
+    document.write("<a id=\"displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}\" href=\"javascript:toggle('{{course.course.section}}','"+days+"','displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}');\">show</a>");
+    
+    
+    // toogle to add/remove course from the list
+    add_remove_course_show('{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{course.course.name}}','{{course.course.code}}','{{course.course.section}}');
+</script>
+    <li>
+    <input id="{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{course.course.name}}','{{course.course.code}}','{{course.course.section}}')" value="add" />
+    <div id="courseid" onclick="changeInfo('{{course.course.code}}{{course.course.section}}')">{{course.course.name}}</div>
+    </li>
+{% endfor %}
+
+
 </div>
 <div id="course_info" style="display:block;">
 course_info
@@ -57,19 +233,27 @@ course_info
 
 <table id="month">
 <tbody>
-<div class="test" style="display: block; top:400px;  position: absolute; left:200px; border:1px solid red;">
-test
-</div>
-
 
 <script type="text/javascript">
+/*
 var timeStart,timeEnd,day;
-timeStart = 100;
-timeEnd = 100;
-day=130;
-document.write("<div id=\"courseCode\" style=\"top:"+timeStart+"px; left:"+day+"px; width:100px; height:"+timeEnd+"px; background-color:yellow; position:absolute;\">");
+timeStart = 0;
+timeEnd = 70;
+day=52+92.5*0;
+document.write("<div id=\"courseCode\" style=\"top:"+timeStart+"px; left:"+day+"px; width:92px; height:"+timeEnd+"px; background-color:yellow; position:absolute;\">");
 document.write("courseTest");
 document.write("</div>");
+*/
+var blockH = 70;
+var blockW = 92.5;
+var indent = 52;
+{% for course in account.courses %}
+    {% for time in course.course.time %}
+        document.write("<div id=\"{{course.course.section}}{{time.day}}\" style=\"top:"+(blockH*({{time.start}}-6))+"px; left:"+(indent+blockW*({{time.day}}-2))+"px; width:92px; height:"+(blockH*({{time.end}}-{{time.start}}))+"px; background-color:yellow; position:absolute;\">");
+        document.write("{{course.course.name}}: {{time.day}} {{time.start}} {{time.end}}");
+        document.write("</div>");
+    {% endfor %}
+{% endfor %}
 </script>
 
 

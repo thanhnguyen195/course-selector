@@ -66,10 +66,10 @@ class MainHandler(BaseHandler):
             id = user.user_id()
             account = data.Users.all().filter('id =',id).get()
             
-            course_test = data.Courses.all().fetch(5)
-            for course in course_test:
-                usercourse = data.UserCourse.get_or_insert(account.id+course.code+course.section, user = account, course = course, id=account.id+course.code+course.section)
-                usercourse.put()
+            #course_test = data.Courses.all().fetch(5)
+            #for course in course_test:
+            #    usercourse = data.UserCourse.get_or_insert(account.id+course.code+course.section, user = account, course = course, id=account.id+course.code+course.section)
+            #    usercourse.put()
             
             logout_link = users.create_logout_url("/")
             self.render("search.html", schools = schools, majors = majors, courses = courses, account = account, logout_link = logout_link)
@@ -83,20 +83,63 @@ class RPCHandler(BaseHandler): # AJAX call
         id = user.user_id()
         account = data.Users.all().filter('id =',id).get()
 
-        id = self.request.get('infor')
+        infor = self.request.get('infor')
         name = self.request.get('name')
         code = self.request.get('code')
         section = self.request.get('section')
         
         course = data.Courses.all().filter('code =',code).filter('section =',section).filter('name =',name).get()
-        token = data.UserCourse.all().filter('id =',id).get()
+        token = data.UserCourse.all().filter('id =',infor).get()
         if token:
             token.delete()
             self.response.out.write("add")
         else:
-            usercourse = data.UserCourse.get_or_insert(id,user = account, course = course, id = id)
+            usercourse = data.UserCourse.get_or_insert(id,user = account, course = course, id = infor, display = "no")
             usercourse.put()
             self.response.out.write("remove")
+
+class SRPCHandler(BaseHandler): # AJAX call
+    def get(self):
+        user = users.get_current_user()
+        id = user.user_id()
+        account = data.Users.all().filter('id =',id).get()
+
+        infor = self.request.get('infor')
+        token = data.UserCourse.all().filter('id =',infor).get()
+        if token:
+            self.response.out.write("remove")
+        else:
+            self.response.out.write("add")
+
+class ScheduleDisplayHandler(BaseHandler): # AJAX call
+    def get(self):
+        user = users.get_current_user()
+        id = user.user_id()
+        account = data.Users.all().filter('id =',id).get()
+
+        infor = self.request.get('infor')
+        token = data.UserCourse.all().filter('id =',infor).get()
+        if token.display=='no':
+            token.display='yes'
+            token.put()
+            self.response.out.write("show")
+        else:
+            token.display='no'
+            token.put()
+            self.response.out.write("hidden")
+
+class ShowScheduleDisplayHandler(BaseHandler): # AJAX call
+    def get(self):
+        user = users.get_current_user()
+        id = user.user_id()
+        account = data.Users.all().filter('id =',id).get()
+
+        infor = self.request.get('infor')
+        token = data.UserCourse.all().filter('id =',infor).get()
+        if token.display=='no':
+            self.response.out.write("hidden")
+        else:
+            self.response.out.write("show")
 
 
 class UserHandler(BaseHandler): # Create a new user database if it is a new user
@@ -187,8 +230,10 @@ class UserSchedule(BaseHandler):
     def get(self):
         user = users.get_current_user()
         if user:
+            id = user.user_id()
+            account = data.Users.all().filter('id =',id).get()
             courses = data.Courses.all().fetch(1000)
-            self.render("userschedule.html", courses=courses)
+            self.render("userschedule.html", courses = courses, account = account)
         else:
             self.redirect(users.create_login_url("/logincheck"))
 
@@ -683,5 +728,8 @@ app = webapp2.WSGIApplication([('/', MainHandler),
                                #('/inputdata', InputData),
                                ('/logincheck', UserHandler),
                                ('/rpc', RPCHandler),
+                               ('/srpc', SRPCHandler),
+                               ('/display', ScheduleDisplayHandler),
+                               ('/showdisplay', ShowScheduleDisplayHandler),
                                ('/URLFetch', URLFetchHandler)],
                               debug=True)
