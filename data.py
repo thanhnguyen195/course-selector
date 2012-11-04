@@ -38,7 +38,7 @@ class Courses(db.Model):
     section = db.StringProperty()
     note = db.StringProperty()
     linkup = db.StringProperty()
-    InsPer = db.StringProperty()
+    InsPer = db.TextProperty()
     
     @property
     def time(self):

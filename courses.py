@@ -94,7 +94,7 @@ class RPCHandler(BaseHandler): # AJAX call
             token.delete()
             self.response.out.write("add")
         else:
-            usercourse = data.UserCourse.get_or_insert(id,user = account, course = course, id = infor, display = "no")
+            usercourse = data.UserCourse.get_or_insert(infor,user = account, course = course, id = infor, display = "no")
             usercourse.put()
             self.response.out.write("remove")
 
@@ -240,6 +240,9 @@ class UserSchedule(BaseHandler):
 
 class URLFetchHandler(BaseHandler):
     def get(self):
+        self.render("inputurl.html")
+    
+    def post(self):
         
         
         #########               Smith time process path         ######################
@@ -301,7 +304,10 @@ class URLFetchHandler(BaseHandler):
             if time[5]=="A":
                 result = hour + minute/60
             elif time[5]=="P":
-                result = hour + float(12) + minute/60
+                if hour==12:
+                    result = hour + minute/60
+                else:
+                    result = hour + float(12) + minute/60
             return result
         
         def split_data_Hampshire(data):
@@ -352,7 +358,10 @@ class URLFetchHandler(BaseHandler):
             if time[5]=="A":
                 result = hour + minute/60
             elif time[5]=="P":
-                result = hour + float(12) + minute/60
+                if hour==12:
+                    result = hour + minute/60
+                else:
+                    result = hour + float(12) + minute/60
             return result
         
         def split_data_Moho(data):
@@ -406,7 +415,10 @@ class URLFetchHandler(BaseHandler):
             if time[5]=="A":
                 result = hour + minute/60
             elif time[5]=="P":
-                result = hour + float(12) + minute/60
+                if hour==12:
+                    result = hour + minute/60
+                else:
+                    result = hour + float(12) + minute/60
             return result
         
         def split_data_UMass(data):
@@ -508,12 +520,12 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("content:encoded")+17
                 end = token.find("</div>",start)
                 courseDescription_token = token[start:end]
-                if courseDescription_token.find("<p>")==-1:
+                if courseDescription_token.find("<p")==-1:
                     courseDescription = courseDescription_token
                 else:
                     courseDescription=""
-                    while courseDescription_token.find("<p>")!=-1:
-                        start = courseDescription_token.find("<p>")
+                    while courseDescription_token.find("<p")!=-1:
+                        start = courseDescription_token.find("<p")
                         end = courseDescription_token.find("</p>")
                         courseDescription = courseDescription+" "+courseDescription_token[start+3:end]
                         courseDescription_token=courseDescription_token[end+4:]
@@ -607,7 +619,6 @@ class URLFetchHandler(BaseHandler):
                 
                 ############ Put the data into datastore #######################
                 coursedata = data.Courses.get_or_insert(courseTitle+courseCode+courseSection,
-                             name = courseTitle,
                              des = courseDescription,
                              code = courseCode,
                              instructor = courseInstructor,
@@ -620,10 +631,12 @@ class URLFetchHandler(BaseHandler):
                              location = courseLocation,
                              section = courseSection,
                              note = courseNote,
+                             InsPer = courseInsPer,
                              linkup = courseLink,
-                             InsPer = courseInsPer)
+                             name = courseTitle)
+                    
                 coursedata.put()
-                majordata = data.Majors.get_or_insert(courseSubject,
+                majordata = data.Majors.get_or_insert(courseSubject+courseSchool,
                                name = courseSubject,
                                school = courseSchool,
                                term = courseSemester,
@@ -699,26 +712,36 @@ class URLFetchHandler(BaseHandler):
                 end = course.find(">",start)-1
                 courseLink.append("https://www.fivecolleges.edu"+course[start:end].strip())
             
-            for i in range(5):
+            for i in range(len(courseLink)):
                 result = coursePageProcess(courseLink[i],courseSection[i],courseCode[i])
             #return courseLink[24]
             return result
     
-        def mainFetch():
-            url = "https://www.fivecolleges.edu/courses?field_course_semester_value=F&field_course_year_value=2012&field_course_institution_value=U&title=&course_instructor=&body_value=&field_course_number_value=&field_course_subject_name_value=&field_course_subject_value="
+        def mainFetch(link):
+            url = link
             result = urlfetch.fetch(url)
             if result.status_code == 200:
                 result_display = pageListProcess(result.content)
-                self.response.out.write(result_display)
-        mainFetch()
+                self.redirect("/")
+        
+        url = self.request.get("url")
+        #self.response.out.write(url)
+        mainFetch(url)
 
+
+class DeleteEverything(BaseHandler):
+    def get(self):
+        #need to pop up something before delete data
         #super dangerous-delete all the datastore
-"""     db.delete(data.Courses.all(keys_only=True))
+        db.delete(data.Courses.all(keys_only=True))
         db.delete(data.Majors.all(keys_only=True))
         db.delete(data.Schools.all(keys_only=True))
         db.delete(data.Time.all(keys_only=True))
         db.delete(data.MajorSchool.all(keys_only=True))
-        db.delete(data.CourseMajor.all(keys_only=True))"""
+        db.delete(data.CourseMajor.all(keys_only=True))
+        db.delete(data.Users.all(keys_only=True))
+        db.delete(data.UserCourse.all(keys_only=True))
+
 
 
 
@@ -731,5 +754,6 @@ app = webapp2.WSGIApplication([('/', MainHandler),
                                ('/srpc', SRPCHandler),
                                ('/display', ScheduleDisplayHandler),
                                ('/showdisplay', ShowScheduleDisplayHandler),
+                               ('/dangerousdelete', DeleteEverything),
                                ('/URLFetch', URLFetchHandler)],
                               debug=True)

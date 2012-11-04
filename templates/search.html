@@ -7,15 +7,6 @@ Smart Courses Selector
 <!--<script src="/static/jquery.js"></script>
 <!--<script type="text/javascript" src="/static/json2.js"></script>-->
 <script type="text/javascript">
-/*
-var majors = ""
-var courses = ""
-    function changeMajor(){
-    majors = "Math "
-    var result = document.getElementById('result')
-    result.value = majors;
-    }
-*/    
 
 </script>
 
@@ -90,7 +81,9 @@ add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.sec
 </script>
 {% endfor %}
 <center><h1>Hello Sky</h1></center>
-<a href={{logout_link}}>Log Out</a>
+
+<a href="/schedule">Your courses and schedule</a></br>
+<a href={{logout_link}}>Log Out</a></br>
 
 <p>{{account.id}}  {{account.email}}</p>
     {% for course in account.courses %}

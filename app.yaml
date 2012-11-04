@@ -1,4 +1,4 @@
-application: course-selector
+application: fivecolcourse
 version: 1
 runtime: python27
 api_version: 1
@@ -13,6 +13,10 @@ handlers:
   static_dir: static
 
 - url: /URLFetch
+  script: courses.app
+  login: admin
+  
+- url: /dangerousdelete
   script: courses.app
   login: admin
 
