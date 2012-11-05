@@ -121,7 +121,7 @@
     function changeInfo(courseIn){
         {% for course in courses %}
             if (courseIn=='{{course.code}}{{course.section}}') {
-                    $('course_info').innerHTML = "{{course.schedule}}+{{course.name}}+{{course.des}}";
+                    $('course_info').innerHTML = "<center><b>{{course.name}}</b></center></br><b>Code:</b> {{course.code}} </br> <b>Section:</b> {{course.section}} <b>Credits:</b> {{course.credit}}</br><b>Meeting Time:</b> {{course.schedule}}</br><b>Location:</b> {{course.location}}</br><b><a href={{course.url}}>Link to course page</a> </b></br><b>Description: </b></br>{{course.des}}";
             }
         {% endfor %}
     }
@@ -183,10 +183,12 @@
 </script>
 <center><h1>Personal Schedule</h1></center>
 
-<a href="/">Home page</a></br>
+<div id="scheduleqqq"><a href="/schedule">Schedule</a></div>
+<div id="schedule1qqq"><a href={{logout_link}}>Log Out</a></div>
+<div id="schedulehqqq"><a href="/">Home</a></div>
 
+<div style="position:absolute; left: 8%; font-size:18px; top: 8%; color:FF0033;"><b>Course List</b></div>
 <div id="course_list">
-course_list </br>
 {% for course in account.courses %}
 <script type="text/javascript">
     //toogle for display course in the schedule
@@ -195,23 +197,24 @@ course_list </br>
         days = days+'{{time.day}}';
     {% endfor %}
     
-    toggle_show('{{course.course.section}}',days,'displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}');
-    document.write("<a id=\"displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}\" href=\"javascript:toggle('{{course.course.section}}','"+days+"','displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}');\">show</a>");
+    toggle_show('{{course.course.name}}{{course.course.code}}{{course.course.section}}',days,'displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}');
+    document.write("<a id=\"displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}\" href=\"javascript:toggle('{{course.course.name}}{{course.course.code}}{{course.course.section}}','"+days+"','displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}'); \">show</a>");
+    //document.write("<a id=\"displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}\" href=\"javascript:toggle('{{course.course.name}}{{course.course.code}}{{course.course.section}}','"+days+"','displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}'); style=\"font-family: Arial, Helvetica, sans-serif;font-size: 14px;color: #ffffff;padding: 10px 15px;background: -moz-linear-gradient(top,#fff3db 0%,#ffc821 25%,#ff3c00);background: -webkit-gradient(linear, left top, left bottom,from(#fff3db),color-stop(0.25, #ffc821),to(#ff3c00));-moz-border-radius: 30px;-webkit-border-radius: 30px;border-radius: 30px;border: 1px solid #b85f00;-moz-box-shadow:0px 1px 3px rgba(000,000,000,1),inset 0px -1px 0px rgba(255,255,255,0.7);-webkit-box-shadow:0px 1px 3px rgba(000,000,000,1),inset 0px -1px 0px rgba(255,255,255,0.7);box-shadow:0px 1px 3px rgba(000,000,000,1),inset 0px -1px 0px rgba(255,255,255,0.7);text-shadow:0px -1px 1px rgba(000,000,000,0.2),0px 1px 0px rgba(255,255,255,0.3); \"\">show</a>");
     
     
     // toogle to add/remove course from the list
     add_remove_course_show('{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{course.course.name}}','{{course.course.code}}','{{course.course.section}}');
 </script>
     <li>
-    <input id="{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{course.course.name}}','{{course.course.code}}','{{course.course.section}}')" value="add" />
-    <div id="courseid" onclick="changeInfo('{{course.course.code}}{{course.course.section}}')">{{course.course.name}}</div>
+    <div id="courseid" onclick="changeInfo('{{course.course.code}}{{course.course.section}}')"><input id="{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{course.course.name}}','{{course.course.code}}','{{course.course.section}}')" value="add" />{{course.course.name}}</div>
     </li>
 {% endfor %}
 
 
 </div>
+
 <div id="course_info" style="display:block;">
-course_info
+
 </div>
 
 <div id="schedule1">
@@ -250,10 +253,23 @@ document.write("</div>");
 var blockH = 70;
 var blockW = 92.5;
 var indent = 52;
+function randomCol(){
+    var choice = Math.floor((Math.random()*6)+1);
+    switch (choice){
+    case 1: return "#66FFFF";
+    case 2: return "#99FF33";
+    case 3: return "#FF0066";
+    case 4: return "#FFFF99";
+    case 5: return "#FF66FF";
+    case 6: return "#8DC7BB";
+    }
+}
+
 {% for course in account.courses %}
+    var colors = randomCol();
     {% for time in course.course.time %}
-        document.write("<div id=\"{{course.course.section}}{{time.day}}\" style=\"top:"+(blockH*({{time.start}}-6))+"px; left:"+(indent+blockW*({{time.day}}-2))+"px; width:92px; height:"+(blockH*({{time.end}}-{{time.start}}))+"px; background-color:yellow; position:absolute;\">");
-        document.write("{{course.course.name}}: {{time.day}} {{time.start}} {{time.end}}");
+        document.write("<div id=\"{{course.course.name}}{{course.course.code}}{{course.course.section}}{{time.day}}\" style=\"overflow:auto; opacity:0.8; border-radius: 10px; top:"+(blockH*({{time.start}}-6))+"px; left:"+(indent+blockW*({{time.day}}-2))+"px; width:92px; height:"+(blockH*({{time.end}}-{{time.start}}))+"px; background-color:"+colors+"; position:absolute;\">");
+        document.write("<center>{{course.course.name}}</center>");
         document.write("</div>");
     {% endfor %}
 {% endfor %}
@@ -284,6 +300,8 @@ document.write("</tr>");
 </table>
 
 </div>
+
+<div id="footer" style="position:absolute; top:93%; left:40%;">Created By Thanh Nguyen 2012. All Rights Reserved.</div>
 
 </body>
 </html>

@@ -526,8 +526,9 @@ class URLFetchHandler(BaseHandler):
                     courseDescription=""
                     while courseDescription_token.find("<p")!=-1:
                         start = courseDescription_token.find("<p")
+                        start = courseDescription_token.find(">",start)
                         end = courseDescription_token.find("</p>")
-                        courseDescription = courseDescription+" "+courseDescription_token[start+3:end]
+                        courseDescription = courseDescription+" "+courseDescription_token[start+1:end]
                         courseDescription_token=courseDescription_token[end+4:]
                 courseDescription = parser.unescape(courseDescription)
                 
@@ -537,6 +538,9 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseNote = token[start:end]
+                newline = courseNote.find("\r")
+                if newline!=-1:
+                    courseNote = courseNote[1:]
                 courseNote = parser.unescape(courseNote)
                 
                 start = content.find("field field-name-field-course-linked field-type-list-boolean field-label-inline clearfix")
@@ -633,7 +637,8 @@ class URLFetchHandler(BaseHandler):
                              note = courseNote,
                              InsPer = courseInsPer,
                              linkup = courseLink,
-                             name = courseTitle)
+                             name = courseTitle,
+                             url = link)
                     
                 coursedata.put()
                 majordata = data.Majors.get_or_insert(courseSubject+courseSchool,

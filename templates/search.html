@@ -20,7 +20,12 @@ Smart Courses Selector
     function changeInfo(courseIn){
         {% for course in courses %}
             if (courseIn=='{{course.code}}{{course.section}}') {
-                    $('info').innerHTML = "{{course.schedule}}+{{course.name}}+{{course.des}}";
+                    $('infotitle').innerHTML = "<center><b>{{course.name}}</b></center>"
+                    $('infonote').innerHTML = "<b><a href={{course.url}}>Link to course page in Five College website</a> </b>"
+                    $('infodescription').innerHTML = "{{course.des}}</br>";
+                    $('infodescriptiontitle').innerHTML = "<b>Description:</b>";
+                    $('infoname').innerHTML = "Major: {{course.major}}</br>Code number: {{course.code}}</br>Section: {{course.section}}</br>Credits: {{course.credit}}";
+                    $('infotime').innerHTML = "Meeting time:</br>{{course.schedule}}</br>Location:</br>{{course.location}}"
             }
         {% endfor %}
     }
@@ -51,25 +56,25 @@ Smart Courses Selector
     }
     
     function add_remove_course_show(div_id,name,code,section){
-        var xmlhttp;
+        var xmlhttp1;
         if (window.XMLHttpRequest)
           {// code for IE7+, Firefox, Chrome, Opera, Safari
-          xmlhttp=new XMLHttpRequest();
+          xmlhttp1=new XMLHttpRequest();
           }
         else
           {// code for IE6, IE5
-          xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+          xmlhttp1=new ActiveXObject("Microsoft.XMLHTTP");
           }
         var test="test";
-        xmlhttp.open("GET","/srpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
-        xmlhttp.send();
+        xmlhttp1.open("GET","/srpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp1.send();
         //xmlhttp.send("infor=test");
-        xmlhttp.onreadystatechange=function()
+        xmlhttp1.onreadystatechange=function()
           {
-          if (xmlhttp.readyState==4 && xmlhttp.status==200)
+          if (xmlhttp1.readyState==4 && xmlhttp1.status==200)
             {
             button = document.getElementById(div_id);
-            button.value = xmlhttp.responseText;
+            button.value = xmlhttp1.responseText;
             //document.write("olala go inside");
             }
           }
@@ -80,15 +85,12 @@ Smart Courses Selector
 add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}');
 </script>
 {% endfor %}
-<center><h1>Hello Sky</h1></center>
+<center><h1><span id="brandfive"><a href="/">5ColCourse</a></span></h1></center>
 
-<a href="/schedule">Your courses and schedule</a></br>
-<a href={{logout_link}}>Log Out</a></br>
+<div id="schedule"><a href="/schedule">Schedule</a></div>
+<div id="schedule1"><a href={{logout_link}}>Log Out</a></div>
+<div id="scheduleh"><a href="/">Home</a></div>
 
-<p>{{account.id}}  {{account.email}}</p>
-    {% for course in account.courses %}
-        <p>{{course.course.name}} {{course.course.section}}</p>
-    {% endfor %}
 
 <div id="schools">
 <ul>
@@ -108,14 +110,23 @@ add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.sec
 <ul>
 {% for course in courses %}
 <li>
-<input id="{{account.id}}{{course.name}}{{course.code}}{{course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.name}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}')" value="add" />
-<div id="courseid" onclick="changeInfo('{{course.code}}{{course.section}}')">{{course.name}}</div>
+<div id="courseid" onclick="changeInfo('{{course.code}}{{course.section}}')"><input id="{{account.id}}{{course.name}}{{course.code}}{{course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.name}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}')" value="add" />{{course.name}}</div>
+</br>
 </li>
 {% endfor %}
 </ul>
 </div>
-<div id="info">
-<input id="result" type="text" value="" readonly="true" disabled="true" />
+<div id="infodescriptiontitle">
 </div>
+<div id="infodescription">
+</div>
+<div id="infotitle"></div>
+<div id="infonote"></div>
+<div id="infoname">
+</div>
+<div id="infotime">
+</div>
+
+<div id="footer" style="position:absolute; top:93%; left:37%;">Created By Thanh Nguyen 2012. All Rights Reserved.</div>
 </body>
 </html>
