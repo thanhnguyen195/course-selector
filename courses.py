@@ -173,14 +173,15 @@ class UserSchedule(BaseHandler):
         user = users.get_current_user()
         if user:
             id = user.user_id()
+            logout_link = users.create_logout_url("/")
             account = memcache.get(id)
             if account is None:
                 account = data.Users.all().filter('id =',id).get()
                 if not memcache.add(id,account,86400):
                     logging.error('User schedule page memcache set failed')
-            self.render("userschedule.html", account = account)
+            self.render("userschedule.html", account = account, logout_link = logout_link)
         else:
-            self.redirect(users.create_login_url("/logincheck"))
+            self.redirect(users.create_login_url("/"))
 
 
 class URLFetchHandler(BaseHandler):
@@ -757,7 +758,12 @@ class DeleteEverything(BaseHandler):
 
 class FeedbackHandler(BaseHandler):
     def get(self):
-        self.render("feedback.html")
+        user = users.get_current_user()
+        logout_link = users.create_logout_url("/")
+        if user:
+            self.render("feedback.html", logout_link = logout_link)
+        else:
+            self.redirect("/")
 
     def post(self):
         feedback = self.request.get('feedback')
