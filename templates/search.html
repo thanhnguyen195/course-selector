@@ -104,7 +104,8 @@ add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.sec
 {% endfor %}
 <center><h1><span id="brandfive"><a href="/">5ColCourse</a></span></h1></center>
 
-<div id="schedule"><a href="/schedule">Schedule</a></div>
+<div id="schedules"><a href="/schedule">Schedule</a></div>
+<div id="schedule"><a href="/feedback">Feedback</a></div>
 <div id="schedule1"><a href={{logout_link}}>Log Out</a></div>
 <div id="scheduleh"><a href="/">Home</a></div>
 
@@ -145,5 +146,14 @@ add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.sec
 </div>
 
 <div id="footer" style="position:absolute; top:93%; left:37%;">Created By Thanh Nguyen 2012. All Rights Reserved.</div>
+{% endif %}
+
+{% if not user %}
+<center><h1><span id="brandfive"><a href="/">5ColCourse</a></span></h1></center>
+<center><div id="Notification">Hello. This is the open beta version of 5ColCourse web application, an application that will lets you look up all the courses from five colleges in one place, and picking up the courses that you like to store in your own profile and schedule. And it is absolutely <b>FREE</b> to use.</br> So lets start using it by <a href={{login_link}}>Loging in</a></div></center>
+
+<div id="footer" style="position:absolute; top:93%; left:37%;">Created By Thanh Nguyen 2012. All Rights Reserved.</div>
+{% endif %}
+
 </body>
 </html>

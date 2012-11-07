@@ -76,4 +76,9 @@ class UserCourse(db.Model):
     course = db.ReferenceProperty(Courses)
     id = db.StringProperty()
     display = db.StringProperty()
+
+class Feedbacks(db.Model):
+    owner = db.EmailProperty()
+    time = db.DateTimeProperty()
+    content = db.TextProperty()
     

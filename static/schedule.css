@@ -79,6 +79,18 @@ background-image:url(/static/08.jpg);
 }
 
 
+#schedulesqqq {
+font-size:18px;
+position:absolute;
+top:20px;
+right:210px;
+}
+
+#schedulesqqq a:link {text-decoration:none; color: #3300FF;}
+#schedulesqqq a:visited {text-decoration:none; color: #3300FF;}
+#schedulesqqq a:hover {text-decoration:none; color: #FF0033;}
+#schedulesqqq a:active {text-decoration:none; color: #3300FF;}
+
 #scheduleqqq {
 font-size:18px;
 position:absolute;
@@ -107,7 +119,7 @@ right:50px;
 font-size:18px;
 position:absolute;
 top:20px;
-right:210px;
+right:290px;
 }
 
 #schedulehqqq a:link {text-decoration:none; color: #3300FF;}

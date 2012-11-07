@@ -196,11 +196,12 @@
 </script>
 <center><h1>Personal Schedule</h1></center>
 
-<div id="scheduleqqq"><a href="/schedule">Schedule</a></div>
+<div id="schedulesqqq"><a href="/schedule">Schedule</a></div>
+<div id="scheduleqqq"><a href="/feedback">Feedback</a></div>
 <div id="schedule1qqq"><a href={{logout_link}}>Log Out</a></div>
 <div id="schedulehqqq"><a href="/">Home</a></div>
 
-<div style="position:absolute; left: 8%; font-size:18px; top: 8%; color:FF0033;"><b>Course List</b></div>
+<div style="position:absolute; left: 8%; font-size:18px; top: 8%; color:FF0033;"><b>My courses list</b></div>
 <div id="course_list">
 {% for course in account.courses %}
 <script type="text/javascript">
@@ -281,7 +282,7 @@ function randomCol(){
 {% for course in account.courses %}
     var colors = randomCol();
     {% for time in course.course.time %}
-        document.write("<div id=\"{{course.course.name}}{{course.course.code}}{{course.course.section}}{{time.day}}\" style=\"overflow:auto; opacity:0.8; border-radius: 10px; top:"+(blockH*({{time.start}}-6))+"px; left:"+(indent+blockW*({{time.day}}-2))+"px; width:92px; height:"+(blockH*({{time.end}}-{{time.start}}))+"px; background-color:"+colors+"; position:absolute;\">");
+        document.write("<div id=\"{{course.course.name}}{{course.course.code}}{{course.course.section}}{{time.day}}\" style=\"overflow:auto; opacity:0.8; border-radius: 10px; top:"+(blockH*({{time.start}}-8))+"px; left:"+(indent+blockW*({{time.day}}-2))+"px; width:92px; height:"+(blockH*({{time.end}}-{{time.start}}))+"px; background-color:"+colors+"; position:absolute;\">");
         document.write("<center>{{course.course.name}}</center>");
         document.write("</div>");
     {% endfor %}
@@ -291,16 +292,16 @@ function randomCol(){
 
 <script type="text/javascript">
 var i,j;
-for (i=0;i<16;i++){
+for (i=0;i<14;i++){
 document.write("<tr>");
-if (i<6) {
-document.write("<th class=\"nothing\">"+(i+6)+"am</th>");
+if (i<4) {
+document.write("<th class=\"nothing\">"+(i+8)+"am</th>");
 }
-if (i==6) {
-document.write("<th class=\"nothing\">"+(i+6)+"pm</th>");
+if (i==4) {
+document.write("<th class=\"nothing\">"+(i+8)+"pm</th>");
 }
-if (i>6) {
-document.write("<th class=\"nothing\">"+(i-6)+"pm</th>");
+if (i>4) {
+document.write("<th class=\"nothing\">"+(i-4)+"pm</th>");
 }
 for (j=0;j<7;j++){
 document.write("<th>&nbsp;</th>");

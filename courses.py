@@ -21,7 +21,7 @@ import string
 import re
 import HTMLParser
 import logging
-import datetime
+
 
 from google.appengine.ext import db
 from google.appengine.ext import webapp
@@ -29,6 +29,7 @@ from django.utils import simplejson
 from google.appengine.api import urlfetch
 from google.appengine.api import users
 from google.appengine.api import memcache
+from datetime import datetime
 #from data import Entry
 
 import data
@@ -83,7 +84,7 @@ class MainHandler(BaseHandler):
             
             
             logout_link = users.create_logout_url("/")
-            self.render("search.html", schools = schools, majors = majors, courses = courses, account = account, logout_link = logout_link)
+            self.render("search.html", schools = schools, majors = majors, courses = courses, account = account, logout_link = logout_link, user = user)
             #self.response.out.write(currentmajor)
         else:
             login_link =users.create_login_url("/logincheck")
@@ -586,50 +587,58 @@ class URLFetchHandler(BaseHandler):
                 #return courseTime
                 
                 ############ Put the data into datastore #######################
-                coursedata = data.Courses.get_or_insert(courseTitle+courseCode+courseSection,
-                             des = courseDescription,
-                             code = courseCode,
-                             instructor = courseInstructor,
-                             schedule = courseTime,
-                             major = courseSubject,
-                             school = courseSchool,
-                             term = courseSemester,
-                             year = courseYear,
-                             credit = courseCredit,
-                             location = courseLocation,
-                             section = courseSection,
-                             note = courseNote,
-                             InsPer = courseInsPer,
-                             linkup = courseLink,
-                             name = courseTitle,
-                             url = link)
-                coursedata.des = courseDescription
-                coursedata.code = courseCode
-                coursedata.instructor = courseInstructor
-                coursedata.schedule = courseTime
-                coursedata.major = courseSubject
-                coursedata.school = courseSchool
-                coursedata.term = courseSemester
-                coursedata.year = courseYear
-                coursedata.credit = courseCredit
-                coursedata.location = courseLocation
-                coursedata.section = courseSection
-                coursedata.note = courseNote
-                coursedata.InsPer = courseInsPer
-                coursedata.linkup = courseLink
-                coursedata.name = courseTitle
-                coursedata.url = link
+                coursedata = data.Courses.all().filter('name =',courseTitle).filter('code =',courseCode).filter('section =',courseSection).get()
+                if coursedata is None:
+                    coursedata = data.Courses.get_or_insert(courseTitle+courseCode+courseSection,
+                                 des = courseDescription,
+                                 code = courseCode,
+                                 instructor = courseInstructor,
+                                 schedule = courseTime,
+                                 major = courseSubject,
+                                 school = courseSchool,
+                                 term = courseSemester,
+                                 year = courseYear,
+                                 credit = courseCredit,
+                                 location = courseLocation,
+                                 section = courseSection,
+                                 note = courseNote,
+                                 InsPer = courseInsPer,
+                                 linkup = courseLink,
+                                 name = courseTitle,
+                                 url = link)
+                else:
+                    coursedata.des = courseDescription
+                    coursedata.code = courseCode
+                    coursedata.instructor = courseInstructor
+                    coursedata.schedule = courseTime
+                    coursedata.major = courseSubject
+                    coursedata.school = courseSchool
+                    coursedata.term = courseSemester
+                    coursedata.year = courseYear
+                    coursedata.credit = courseCredit
+                    coursedata.location = courseLocation
+                    coursedata.section = courseSection
+                    coursedata.note = courseNote
+                    coursedata.InsPer = courseInsPer
+                    coursedata.linkup = courseLink
+                    coursedata.name = courseTitle
+                    coursedata.url = link
                 coursedata.put()
-                majordata = data.Majors.get_or_insert(courseSubject+courseSchool,
-                               name = courseSubject,
-                               school = courseSchool,
-                               term = courseSemester,
-                               year = courseYear)
-                majordata.name = courseSubject
-                majordata.school = courseSchool
-                majordata.term = courseSemester
-                majordata.year = courseYear
+            
+                majordata = data.Majors.all().filter('name =',courseSubject).filter('school =',courseSchool).get()
+                if majordata is None:
+                    majordata = data.Majors.get_or_insert(courseSubject+courseSchool,
+                                   name = courseSubject,
+                                   school = courseSchool,
+                                   term = courseSemester,
+                                   year = courseYear)
+                else:
+                    majordata.name = courseSubject
+                    majordata.school = courseSchool
+                    majordata.term = courseSemester
+                    majordata.year = courseYear
                 majordata.put()
+                
                 coursemajor = data.CourseMajor.get_or_insert(courseSubject+courseTitle,major = majordata, course = coursedata)
                 coursemajor.major = majordata
                 coursemajor.course = coursedata
@@ -746,9 +755,18 @@ class DeleteEverything(BaseHandler):
         #db.delete(data.UserCourse.all(keys_only=True))
         return "nothing"
 
+class FeedbackHandler(BaseHandler):
+    def get(self):
+        self.render("feedback.html")
 
-
-
+    def post(self):
+        feedback = self.request.get('feedback')
+        user = users.get_current_user()
+        time = datetime.now()
+        email = user.email()
+        feedback_token = data.Feedbacks.get_or_insert(feedback+email,owner = email, time = time, content = feedback)
+        feedback_token.put()
+        self.redirect("/")
 
 app = webapp2.WSGIApplication([('/', MainHandler),
                                ('/schedule', UserSchedule),
@@ -759,5 +777,6 @@ app = webapp2.WSGIApplication([('/', MainHandler),
                                ('/display', ScheduleDisplayHandler),
                                ('/showdisplay', ShowScheduleDisplayHandler),
                                ('/dangerousdelete', DeleteEverything),
+                               ('/feedback', FeedbackHandler),
                                ('/URLFetch', URLFetchHandler)],
                               debug=True)

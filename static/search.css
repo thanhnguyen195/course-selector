@@ -87,6 +87,18 @@ text-shadow:0px 0px 0 rgb(3,-171,-252), 1px 0px 0 rgb(-239,-413,-494),2px 0px 1p
 #brandfive a:hover {text-decoration:none; color: #FF0000;}
 #brandfive a:active {text-decoration:none; color: #FF0000;}
 
+#schedules {
+font-size:18px;
+position:absolute;
+top:20px;
+right:210px;
+}
+
+#schedules a:link {text-decoration:none; color: #3300FF;}
+#schedules a:visited {text-decoration:none; color: #3300FF;}
+#schedules a:hover {text-decoration:none; color: #FF0033;}
+#schedules a:active {text-decoration:none; color: #3300FF;}
+
 #schedule {
 font-size:18px;
 position:absolute;
@@ -115,7 +127,7 @@ right:50px;
 font-size:18px;
 position:absolute;
 top:20px;
-right:210px;
+right:290px;
 }
 
 #scheduleh a:link {text-decoration:none; color: #3300FF;}
@@ -167,4 +179,11 @@ a:active {text-decoration:underline; color: #3300FF;}
     cursor: pointer;
 }
 
+#notification {
+    width:70%;
+    position:absolute;
+    top:30%;
+    left:15%;
+    font-size:30px;
+}
 
