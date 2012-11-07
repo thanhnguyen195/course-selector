@@ -139,7 +139,7 @@
         {% endfor %}
     }
     
-    function add_remove_course(div_id,name,code,section){
+    function add_remove_course(div_id,school,code,section){
         var xmlhttp;
         if (window.XMLHttpRequest)
           {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -150,7 +150,7 @@
           xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
           }
         var test="test";
-        xmlhttp.open("GET","/rpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp.open("GET","/rpc?infor="+div_id+"&school="+school+"&code="+code+"&section="+section,true);
         xmlhttp.send();
         //xmlhttp.send("infor=test");
         xmlhttp.onreadystatechange=function()
@@ -164,7 +164,7 @@
           }
     }
     
-    function add_remove_course_show(div_id,name,code,section){
+    function add_remove_course_show(div_id,school,code,section){
         var xmlhttp;
         if (window.XMLHttpRequest)
           {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -175,7 +175,7 @@
           xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
           }
         var test="test";
-        xmlhttp.open("GET","/srpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp.open("GET","/srpc?infor="+div_id+"&school="+school+"&code="+code+"&section="+section,true);
         xmlhttp.send();
         //xmlhttp.send("infor=test");
         xmlhttp.onreadystatechange=function()
@@ -196,7 +196,7 @@
 </script>
 <center><h1>Personal Schedule</h1></center>
 
-<div id="schedulesqqq"><a href="/schedule">Schedule</a></div>
+<div id="schedulesqqq"><a href="/schedule">My courses</a></div>
 <div id="scheduleqqq"><a href="/feedback">Feedback</a></div>
 <div id="schedule1qqq"><a href={{logout_link}}>Log Out</a></div>
 <div id="schedulehqqq"><a href="/">Home</a></div>
@@ -211,16 +211,16 @@
         days = days+'{{time.day}}';
     {% endfor %}
     
-    toggle_show('{{course.course.name}}{{course.course.code}}{{course.course.section}}',days,'displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}');
-    document.write("<a id=\"displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}\" href=\"javascript:toggle('{{course.course.name}}{{course.course.code}}{{course.course.section}}','"+days+"','displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}'); \">show</a>");
+    toggle_show('{{course.course.school}}{{course.course.code}}{{course.course.section}}',days,'displaytext{{course.course.school}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.school}}{{course.course.code}}{{course.course.section}}');
+    document.write("<a id=\"displaytext{{course.course.school}}{{course.course.code}}{{course.course.section}}\" href=\"javascript:toggle('{{course.course.school}}{{course.course.code}}{{course.course.section}}','"+days+"','displaytext{{course.course.school}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.school}}{{course.course.code}}{{course.course.section}}'); \">show</a>");
     //document.write("<a id=\"displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}\" href=\"javascript:toggle('{{course.course.name}}{{course.course.code}}{{course.course.section}}','"+days+"','displaytext{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}'); style=\"font-family: Arial, Helvetica, sans-serif;font-size: 14px;color: #ffffff;padding: 10px 15px;background: -moz-linear-gradient(top,#fff3db 0%,#ffc821 25%,#ff3c00);background: -webkit-gradient(linear, left top, left bottom,from(#fff3db),color-stop(0.25, #ffc821),to(#ff3c00));-moz-border-radius: 30px;-webkit-border-radius: 30px;border-radius: 30px;border: 1px solid #b85f00;-moz-box-shadow:0px 1px 3px rgba(000,000,000,1),inset 0px -1px 0px rgba(255,255,255,0.7);-webkit-box-shadow:0px 1px 3px rgba(000,000,000,1),inset 0px -1px 0px rgba(255,255,255,0.7);box-shadow:0px 1px 3px rgba(000,000,000,1),inset 0px -1px 0px rgba(255,255,255,0.7);text-shadow:0px -1px 1px rgba(000,000,000,0.2),0px 1px 0px rgba(255,255,255,0.3); \"\">show</a>");
     
     
     // toogle to add/remove course from the list
-    add_remove_course_show('{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{course.course.name}}','{{course.course.code}}','{{course.course.section}}');
+    add_remove_course_show('{{account.id}}{{course.course.school}}{{course.course.code}}{{course.course.section}}','{{course.course.school}}','{{course.course.code}}','{{course.course.section}}');
 </script>
     <li>
-    <div id="courseid" onclick="changeInfo('{{course.course.code}}{{course.course.section}}')"><input id="{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.course.name}}{{course.course.code}}{{course.course.section}}','{{course.course.name}}','{{course.course.code}}','{{course.course.section}}')" value="add" />{{course.course.name}}</div>
+    <div id="courseid" onclick="changeInfo('{{course.course.code}}{{course.course.section}}')"><input id="{{account.id}}{{course.course.school}}{{course.course.code}}{{course.course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.course.school}}{{course.course.code}}{{course.course.section}}','{{course.course.school}}','{{course.course.code}}','{{course.course.section}}')" value="add" />{{course.course.name}}</div>
     </li>
 {% endfor %}
 
@@ -282,7 +282,7 @@ function randomCol(){
 {% for course in account.courses %}
     var colors = randomCol();
     {% for time in course.course.time %}
-        document.write("<div id=\"{{course.course.name}}{{course.course.code}}{{course.course.section}}{{time.day}}\" style=\"overflow:auto; opacity:0.8; border-radius: 10px; top:"+(blockH*({{time.start}}-8))+"px; left:"+(indent+blockW*({{time.day}}-2))+"px; width:92px; height:"+(blockH*({{time.end}}-{{time.start}}))+"px; background-color:"+colors+"; position:absolute;\">");
+        document.write("<div id=\"{{course.course.school}}{{course.course.code}}{{course.course.section}}{{time.day}}\" style=\"overflow:auto; opacity:0.8; border-radius: 10px; top:"+(blockH*({{time.start}}-8))+"px; left:"+(indent+blockW*({{time.day}}-2))+"px; width:92px; height:"+(blockH*({{time.end}}-{{time.start}}))+"px; background-color:"+colors+"; position:absolute;\">");
         document.write("<center>{{course.course.name}}</center>");
         document.write("</div>");
     {% endfor %}

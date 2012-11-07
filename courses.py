@@ -97,11 +97,11 @@ class RPCHandler(BaseHandler): # AJAX call
         account = data.Users.all().filter('id =',id).get()
 
         infor = self.request.get('infor')
-        name = self.request.get('name')
+        school = self.request.get('school')
         code = self.request.get('code')
         section = self.request.get('section')
         
-        course = data.Courses.all().filter('code =',code).filter('section =',section).filter('name =',name).get()
+        course = data.Courses.all().filter('code =',code).filter('section =',section).filter('school =',school).get()
         token = data.UserCourse.all().filter('id =',infor).get()
         if token:
             token.delete()

@@ -47,7 +47,7 @@ Five College Course Selector
         $('infodescription').scrollTop = 0;
     }
 
-    function add_remove_course(div_id,name,code,section){
+    function add_remove_course(div_id,school,code,section){
         var xmlhttp;
         if (window.XMLHttpRequest)
           {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -58,7 +58,7 @@ Five College Course Selector
           xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
           }
         var test="test";
-        xmlhttp.open("GET","/rpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp.open("GET","/rpc?infor="+div_id+"&school="+school+"&code="+code+"&section="+section,true);
         xmlhttp.send();
         //xmlhttp.send("infor=test");
         xmlhttp.onreadystatechange=function()
@@ -72,7 +72,7 @@ Five College Course Selector
           }
     }
     
-    function add_remove_course_show(div_id,name,code,section){
+    function add_remove_course_show(div_id,school,code,section){
         var xmlhttp1;
         if (window.XMLHttpRequest)
           {// code for IE7+, Firefox, Chrome, Opera, Safari
@@ -83,7 +83,7 @@ Five College Course Selector
           xmlhttp1=new ActiveXObject("Microsoft.XMLHTTP");
           }
         var test="test";
-        xmlhttp1.open("GET","/srpc?infor="+div_id+"&name="+name+"&code="+code+"&section="+section,true);
+        xmlhttp1.open("GET","/srpc?infor="+div_id+"&school="+school+"&code="+code+"&section="+section,true);
         xmlhttp1.send();
         //xmlhttp.send("infor=test");
         xmlhttp1.onreadystatechange=function()
@@ -99,12 +99,12 @@ Five College Course Selector
 </script>
 {% for course in courses %}
 <script type="text/javascript">
-add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}');
+add_remove_course_show('{{account.id}}{{course.school}}{{course.code}}{{course.section}}','{{course.school}}','{{course.code}}','{{course.section}}');
 </script>
 {% endfor %}
 <center><h1><span id="brandfive"><a href="/">5ColCourse</a></span></h1></center>
 
-<div id="schedules"><a href="/schedule">Schedule</a></div>
+<div id="schedules"><a href="/schedule">My courses</a></div>
 <div id="schedule"><a href="/feedback">Feedback</a></div>
 <div id="schedule1"><a href={{logout_link}}>Log Out</a></div>
 <div id="scheduleh"><a href="/">Home</a></div>
@@ -128,7 +128,7 @@ add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.sec
 <ul>
 {% for course in courses %}
 <li>
-<div id="courseid" onclick="changeInfo('{{course.code}}{{course.section}}')"><input id="{{account.id}}{{course.name}}{{course.code}}{{course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.name}}{{course.code}}{{course.section}}','{{course.name}}','{{course.code}}','{{course.section}}')" value="add" />{{course.name}}</div>
+<div id="courseid" onclick="changeInfo('{{course.code}}{{course.section}}')"><input id="{{account.id}}{{course.school}}{{course.code}}{{course.section}}" type="button" onclick="add_remove_course('{{account.id}}{{course.school}}{{course.code}}{{course.section}}','{{course.school}}','{{course.code}}','{{course.section}}')" value="add" />{{course.name}}</div>
 </br>
 </li>
 {% endfor %}
@@ -150,7 +150,7 @@ add_remove_course_show('{{account.id}}{{course.name}}{{course.code}}{{course.sec
 
 {% if not user %}
 <center><h1><span id="brandfive"><a href="/">5ColCourse</a></span></h1></center>
-<center><div id="Notification">Hello. This is the open beta version of 5ColCourse web application, an application that will lets you look up all the courses from five colleges in one place, and picking up the courses that you like to store in your own profile and schedule. And it is absolutely <b>FREE</b> to use.</br> So lets start using it by <a href={{login_link}}>Loging in</a></div></center>
+<center><div id="Notification">Hello. This is the open beta version of 5ColCourse web application, an application that will lets you look up all the courses from five colleges in one place, and picking up the courses that you like to store in your own profile and schedule. And it is absolutely <b>FREE</b> to use.</br> So lets start using it by <a href={{login_link}}>Logging in</a></div></center>
 
 <div id="footer" style="position:absolute; top:93%; left:37%;">Created By Thanh Nguyen 2012. All Rights Reserved.</div>
 {% endif %}
