@@ -12,6 +12,22 @@ Smart Courses Selector
 
 </head>
 <body>
+{% if user %}
+
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36111761-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+
 <script type="text/javascript">
     function $(id){
       return document.getElementById(id);
@@ -22,12 +38,13 @@ Smart Courses Selector
             if (courseIn=='{{course.code}}{{course.section}}') {
                     $('infotitle').innerHTML = "<center><b>{{course.name}}</b></center>"
                     $('infonote').innerHTML = "<b><a href={{course.url}}>Link to course page in Five College website</a> </b>"
-                    $('infodescription').innerHTML = "{{course.des}}</br>";
+                    $('infodescription').innerHTML = "<p>{{course.des}}</p><b>Note:</b><p>{{course.note}}</p>";
                     $('infodescriptiontitle').innerHTML = "<b>Description:</b>";
-                    $('infoname').innerHTML = "Major: {{course.major}}</br>Code number: {{course.code}}</br>Section: {{course.section}}</br>Credits: {{course.credit}}";
-                    $('infotime').innerHTML = "Meeting time:</br>{{course.schedule}}</br>Location:</br>{{course.location}}"
+                    $('infoname').innerHTML = "<b>Major:</b> {{course.major}}</br><b>Code number:</b> {{course.code}}</br><b>Section:</b> {{course.section}}</br><b>Credits:</b> {{course.credit}}";
+                    $('infotime').innerHTML = "<b>Instructor:</b></br> {{course.instructor}}</br><b>Meeting time:</b></br>{{course.schedule}}</br><b>Location:</b></br>{{course.location}}"
             }
         {% endfor %}
+        $('infodescription').scrollTop = 0;
     }
 
     function add_remove_course(div_id,name,code,section){

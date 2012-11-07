@@ -5,6 +5,19 @@
 </head>
 <body>
 
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-36111761-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
 
 <script language="javascript"> 
     function toggle(showHideDiv, days, switchTextDiv,usercourseid) {
@@ -119,9 +132,9 @@
     }
     
     function changeInfo(courseIn){
-        {% for course in courses %}
-            if (courseIn=='{{course.code}}{{course.section}}') {
-                    $('course_info').innerHTML = "<center><b>{{course.name}}</b></center></br><b>Code:</b> {{course.code}} </br> <b>Section:</b> {{course.section}} <b>Credits:</b> {{course.credit}}</br><b>Meeting Time:</b> {{course.schedule}}</br><b>Location:</b> {{course.location}}</br><b><a href={{course.url}}>Link to course page</a> </b></br><b>Description: </b></br>{{course.des}}";
+        {% for course in account.courses %}
+            if (courseIn=='{{course.course.code}}{{course.course.section}}') {
+                    $('course_info').innerHTML = "<center><b>{{course.course.name}}</b></center></br><b>Code:</b> {{course.course.code}} </br> <b>Section:</b> {{course.course.section}} <b>Credits:</b> {{course.course.credit}}</br><b>Instructor: </b>{{course.course.instructor}}<b></br>Meeting Time:</b> {{course.course.schedule}}</br><b>Location:</b> {{course.course.location}}</br><b><a href={{course.course.url}}>Link to course page</a> </b></br><b>Description: </b></br>{{course.course.des}}";
             }
         {% endfor %}
     }

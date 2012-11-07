@@ -20,12 +20,15 @@ import os
 import string
 import re
 import HTMLParser
+import logging
+import datetime
 
 from google.appengine.ext import db
 from google.appengine.ext import webapp
 from django.utils import simplejson
 from google.appengine.api import urlfetch
 from google.appengine.api import users
+from google.appengine.api import memcache
 #from data import Entry
 
 import data
@@ -57,25 +60,34 @@ class MainHandler(BaseHandler):
     def get(self):
         schools = data.Schools.all().fetch(10)
         currentschool = self.request.get("school")
-        majors = data.Majors.all().filter('school =',currentschool).fetch(1000)
+        majors = memcache.get("school"+currentschool)
+        if majors is None:
+            majors = data.Majors.all().filter('school =',currentschool).fetch(1000)
+            if not memcache.add("school"+currentschool,majors,86400):
+                logging.error('Main page majors cache set failed')
+    
+        
+    
         currentmajor = self.request.get("major")
-        courses = data.Courses.all().filter('school =',currentschool).filter('major =',currentmajor).fetch(1000)
+        courses = memcache.get(currentschool+currentmajor)
+        if courses is None:
+            courses = data.Courses.all().filter('school =',currentschool).filter('major =',currentmajor).fetch(1000)
+            if not memcache.add(currentschool+currentmajor,courses,86400):
+                logging.error('Main page courses cache set failed')
+        
         user = users.get_current_user()
         if user:
             #get the info of current user
             id = user.user_id()
             account = data.Users.all().filter('id =',id).get()
             
-            #course_test = data.Courses.all().fetch(5)
-            #for course in course_test:
-            #    usercourse = data.UserCourse.get_or_insert(account.id+course.code+course.section, user = account, course = course, id=account.id+course.code+course.section)
-            #    usercourse.put()
             
             logout_link = users.create_logout_url("/")
             self.render("search.html", schools = schools, majors = majors, courses = courses, account = account, logout_link = logout_link)
             #self.response.out.write(currentmajor)
         else:
-            self.redirect(users.create_login_url("/logincheck"))
+            login_link =users.create_login_url("/logincheck")
+            self.render("search.html", schools = schools, majors = majors, courses = courses, user = user, login_link = login_link)
 
 class RPCHandler(BaseHandler): # AJAX call
     def get(self):
@@ -155,85 +167,17 @@ class UserHandler(BaseHandler): # Create a new user database if it is a new user
             self.redirect("/")
 
 
-"""
-class InputData(BaseHandler):
-
-    def get(self):
-        self.render("inputdata.html")
-
-    def post(self):
-        def convert_time(time): # convert a token in form of "10:00AM" to a float number represent for it in the 24 hour form
-            hour = float(time[:2])
-            minute = float(time[3:5])
-            if time[5]=="A":
-                result = hour + minute/60
-            elif time[5]=="P":
-                result = hour + float(12) + minute/60
-            return result
-
-        def split_data(data): # convert a token in form of "MWF 10:00AM-10:50AM" to list of day and two float number represent the start and end time of the class
-            day_token = data[:data.index(" ")] # e.g: "MFW"
-            time_token = data[data.index(" ")+1:] # e.g "10:00AM-01:00PM"
-            days = re.findall(r"(?:[T][H])|[M]|[T]|[W]|[F]|[S]",day_token)
-            time_tokens = re.findall(r"[0-9][0-9][:][0-9][0-9][A|P][M]",time_token) # e.g "10:00AM"
-            start = convert_time(time_tokens[0])
-            end = convert_time(time_tokens[1])
-            return days, start, end
-                    
-        #@db.transactional(xg=True) #put this thing went deploy to test if the atomic function work properly
-        def put_data():
-            name = self.request.get('name')
-            des = self.request.get('des')
-            code = self.request.get('code')
-            instructor = self.request.get('instructor')
-            time = self.request.get('time')
-            major = self.request.get('major')
-            school = self.request.get('school')
-            term = self.request.get('term')
-            name, des, code, instructor, time, major, school, term = name.strip(), des.strip(), code.strip(), instructor.strip(), time.strip(), major.strip(), school.strip(), term.strip()
-        
-            coursedata = data.Courses(name = name,
-                             des = des,
-                             code = code,
-                             instructor = instructor,
-                             time = time,
-                             major = major,
-                             school = school,
-                             term = term)
-            coursedata.put()
-            majordata = data.Majors.get_or_insert(major,
-                           name = major,
-                           school = school,
-                           term = term)
-            majordata.put()
-            coursemajor = data.CourseMajor(major = majordata, course = coursedata)
-            coursemajor.put()
-            
-            schooldata = data.Schools.get_or_insert(school,
-                                  name = school,
-                                  term = term)
-            schooldata.put()
-            majorschool = data.MajorSchool.get_or_insert(schooldata.name+majordata.name,school = schooldata, major = majordata)
-            majorschool.put()
-            #convert the time of the schedule to the Time class
-            time_tokens = re.findall(r"[A-Z]+[ ][0-9][0-9][:][0-9][0-9][A|P][M][-][0-9][0-9][:][0-9][0-9][A|P][M]",time) 
-            for token in time_tokens:
-                days, start, end = split_data(token)
-                for day in days:
-                    time = data.Time(day = day, start = start, end = end, course = coursedata)
-                    time.put()
-            self.redirect('/inputdata')
-        put_data()
-        """
-
 class UserSchedule(BaseHandler):
     def get(self):
         user = users.get_current_user()
         if user:
             id = user.user_id()
-            account = data.Users.all().filter('id =',id).get()
-            courses = data.Courses.all().fetch(1000)
-            self.render("userschedule.html", courses = courses, account = account)
+            account = memcache.get(id)
+            if account is None:
+                account = data.Users.all().filter('id =',id).get()
+                if not memcache.add(id,account,86400):
+                    logging.error('User schedule page memcache set failed')
+            self.render("userschedule.html", account = account)
         else:
             self.redirect(users.create_login_url("/logincheck"))
 
@@ -479,6 +423,11 @@ class URLFetchHandler(BaseHandler):
                 end = content.find("<!--",start)
                 courseTitle = content[start:end].strip()
                 courseTitle = parser.unescape(courseTitle)
+                while courseTitle.find("\n")!=-1:
+                    newlinepos = courseTitle.find("\n")
+                    first_part = courseTitle[:newlinepos]
+                    last_part = courseTitle[newlinepos+1:]
+                    courseTitle = first_part+" "+last_part
                 
                 
                 start = content.find("field field-name-field-course-semester field-type-list-text field-label-inline clearfix")
@@ -530,6 +479,19 @@ class URLFetchHandler(BaseHandler):
                         end = courseDescription_token.find("</p>")
                         courseDescription = courseDescription+" "+courseDescription_token[start+1:end]
                         courseDescription_token=courseDescription_token[end+4:]
+            
+                while courseDescription.find("\n")!=-1:
+                    newlinepos = courseDescription.find("\n")
+                    first_part = courseDescription[:newlinepos]
+                    last_part = courseDescription[newlinepos+1:]
+                    courseDescription = first_part+" "+last_part
+                while courseDescription.find("<")!=-1:
+                    start = courseDescription.find("<")
+                    end = courseDescription.find(">",start)
+                    first_part = courseDescription[:start]
+                    last_part = courseDescription[end+1:]
+                    courseDescription = first_part+" "+last_part
+                    
                 courseDescription = parser.unescape(courseDescription)
                 
                 start = content.find("field field-name-field-course-comments field-type-text-long field-label-inline clearfix")
@@ -538,9 +500,11 @@ class URLFetchHandler(BaseHandler):
                 start = token.find("field-item even")+17
                 end = token.find("</div>",start)
                 courseNote = token[start:end]
-                newline = courseNote.find("\r")
-                if newline!=-1:
-                    courseNote = courseNote[1:]
+                while courseNote.find("\n")!=-1:
+                    newlinepos = courseNote.find("\n")
+                    first_part = courseNote[:newlinepos]
+                    last_part = courseNote[newlinepos+1:]
+                    courseNote = first_part+" "+last_part
                 courseNote = parser.unescape(courseNote)
                 
                 start = content.find("field field-name-field-course-linked field-type-list-boolean field-label-inline clearfix")
@@ -639,23 +603,49 @@ class URLFetchHandler(BaseHandler):
                              linkup = courseLink,
                              name = courseTitle,
                              url = link)
-                    
+                coursedata.des = courseDescription
+                coursedata.code = courseCode
+                coursedata.instructor = courseInstructor
+                coursedata.schedule = courseTime
+                coursedata.major = courseSubject
+                coursedata.school = courseSchool
+                coursedata.term = courseSemester
+                coursedata.year = courseYear
+                coursedata.credit = courseCredit
+                coursedata.location = courseLocation
+                coursedata.section = courseSection
+                coursedata.note = courseNote
+                coursedata.InsPer = courseInsPer
+                coursedata.linkup = courseLink
+                coursedata.name = courseTitle
+                coursedata.url = link
                 coursedata.put()
                 majordata = data.Majors.get_or_insert(courseSubject+courseSchool,
                                name = courseSubject,
                                school = courseSchool,
                                term = courseSemester,
                                year = courseYear)
+                majordata.name = courseSubject
+                majordata.school = courseSchool
+                majordata.term = courseSemester
+                majordata.year = courseYear
                 majordata.put()
                 coursemajor = data.CourseMajor.get_or_insert(courseSubject+courseTitle,major = majordata, course = coursedata)
+                coursemajor.major = majordata
+                coursemajor.course = coursedata
                 coursemajor.put()
                 
                 schooldata = data.Schools.get_or_insert(courseSchool,
                                       name = courseSchool,
                                       term = courseSemester,
                                       year = courseYear)
+                schooldata.name = courseSchool
+                schooldata.term = courseSemester
+                schooldata.year = courseYear
                 schooldata.put()
                 majorschool = data.MajorSchool.get_or_insert(schooldata.name+majordata.name,school = schooldata, major = majordata)
+                majorschool.school = schooldata
+                majorschool.major = majordata
                 majorschool.put()
                 
                 for i in range(len(courseDays)):
@@ -674,6 +664,10 @@ class URLFetchHandler(BaseHandler):
                     else:
                         textDay="Nothing"
                     time = data.Time.get_or_insert(courseCode+courseSection+textDay,day = courseDays[i], start = courseStarts[i], end = courseEnds[i], course = coursedata)
+                    time.day = courseDays[i]
+                    time.start = courseStarts[i]
+                    time.end = courseEnds[i]
+                    time.course = coursedata
                     time.put()
             
                 ################################################################
@@ -727,25 +721,30 @@ class URLFetchHandler(BaseHandler):
             result = urlfetch.fetch(url)
             if result.status_code == 200:
                 result_display = pageListProcess(result.content)
-                self.redirect("/")
+                self.redirect("/URLFetch")
         
         url = self.request.get("url")
-        #self.response.out.write(url)
         mainFetch(url)
+        #for i in range(12):
+        #    token=url+str(i+1)
+        #    mainFetch(token)
+        #self.response.out.write(url)
+        #mainFetch(url)
 
 
 class DeleteEverything(BaseHandler):
     def get(self):
         #need to pop up something before delete data
         #super dangerous-delete all the datastore
-        db.delete(data.Courses.all(keys_only=True))
-        db.delete(data.Majors.all(keys_only=True))
-        db.delete(data.Schools.all(keys_only=True))
-        db.delete(data.Time.all(keys_only=True))
-        db.delete(data.MajorSchool.all(keys_only=True))
-        db.delete(data.CourseMajor.all(keys_only=True))
-        db.delete(data.Users.all(keys_only=True))
-        db.delete(data.UserCourse.all(keys_only=True))
+        #db.delete(data.Courses.all(keys_only=True))
+        #db.delete(data.Majors.all(keys_only=True))
+        #db.delete(data.Schools.all(keys_only=True))
+        #db.delete(data.Time.all(keys_only=True))
+        #db.delete(data.MajorSchool.all(keys_only=True))
+        #db.delete(data.CourseMajor.all(keys_only=True))
+        #db.delete(data.Users.all(keys_only=True))
+        #db.delete(data.UserCourse.all(keys_only=True))
+        return "nothing"
 
 
 
